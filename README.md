@@ -1,6 +1,30 @@
 # EvacuationModSim
-CS 4230 Project by Rohan Varshney, Rishab Mitra, and Dheeraj Bandaru.
+
+Georgia Tech's CS 4230 Project by Rohan Varshney, Rishab Mitra, and Dheeraj Bandaru.
 
 Project Checkpoint Report:
 checkpoint_project_apr12.pdf
 
+**Abstract**
+
+In creating an ideal movie theater, one must not just account for how many seats and how much revenue each theater screen brings in - there must also be safety guidelines and evacuation plans set. Thus, the goal of this model is to show an optimal movie theater that’s able to have the max amount of seats while abiding safety guidelines. The scope of this project will be limited to one type of evacuation - fire. The amount of casualties in case of fire must be zero. However, a goal for a movie theater is to maximize the amount of revenue, as well. Therefore, the movie theater must have the max amount of seats, but also enough exits or space to create a safe evacuation with no casualties.
+
+**Conceptual Model**
+
+The main entities of the conceptual model are defined as the following:
+
+1. Rooms
+
+2. Agents
+
+3. Hazards
+
+Conceptually, the rooms can essentially be defined as somewhat of a cellular automata model. This is because the rooms can be represented as 2D arrays, and each element in the array represents one unit of space. There can be specific values for each element in the array depending on what type of space the element in the array represents. For example, a 0 can represent that a space is open, a 1 can represent an exit, a 2 can represent a wall, and a 3 can represent the fire hazard.
+While there can be rooms of many shapes and sizes, the project will only focus on a standard box room due to the ease of conceptually modeling a room like this as a 2D array. What is in the box room may differ - there could be multiple exits and also random columns protruding from the walls. Thus, there are some parameters that can vary from room to room. For one, the number of exits found in a room can change. A general rule of thumb is that there should be at least 30 occupants per exit. However, due to the size of the rooms in the conceptual model, it is better to have a maximum of 3 occupants per exit. The size of the rooms will be measured in terms of the number of rows and columns. Due to computational complexity and memory limitations, there can only be a maximum of 15 rows and 15 columns - any bigger rooms will lead to a memory overload which causes the simulation to crash.
+
+There are three types of rooms that the model will use as an oracle of comparison. One type of room that will be considered is a box room with completely empty space inside. This should be considered as the prototypical room that most people find themselves in. Essentially, a room type like this could be seen as a room that has some furniture, but not enough to impede anyone from escaping. Another type of room that can be considered is a room where there are exits next to each other. This can be likened to a two-door exit; if one door is blocked, the other door is still available. Generally rooms of this type are much larger, as two-door exits are typically only seen in larger rooms such as a living room or cafeteria. The last type of room that will be looked at is a room that has random columns protruding from the walls. These random columns can represent anything - countertops, furniture big enough to create impediments, or extra concrete to support higher floors. Two-door exits can also be added to this type of room as well. There are, of course, more room types to consider, but we believe that these 3 types of rooms represent the large majority of rooms that agents can find themselves in.
+
+The agents in the room will represent people, and they will all want to go to a 1 to escape the hazard. The only attribute that each agent has is their velocities, which represent how many array elements can one agent traverse in each time step. Also, one other note is that no two agents can occupy the same space, so an agent must wait if another agent is blocking its path. However, the agents will all move at the same velocity, due to the fact that the trade-off between complexity and insight is not significant enough to have agents move at different velocities. The addition of different velocities will add an extra dimension of randomness that would make the evaluation metrics less meaningful. In terms of direction, the agents can only move north, south, east, and west - no diagonal movements are allowed.
+Furthermore, an assumption that is being made for the project is that the entire population in the room will want to go to the nearest exit, and that each agent will take the most optimal path in doing so. In order to find the most optimal path, an assumption that can be made is to treat the room as if it is an unweighted graph, with each node representing a cell in the 2D array and each node having edges connected to the node’s immediate neighbors. Thus, with this assumption, the optimal path can be found through a breadth-first search of the room given a random start position. The breadth-first search will end when an exit is finally explored. Because the simulation is dynamic, in that the hazard will dynamically evolve to obstruct certain paths, the breadth-first search algorithm must be run at every time step.
+
+The hazard’s operation is akin to a stripped-down version of Conway’s Game of Life. The rate at which the hazard spreads is entirely stochastic - there is a chance that a hazard sprouts in a random location and also a chance that an existing hazard spreads into another location. Each hazardous event has a 0.3 chance of probability of occurring every time step. Furthermore, the hazard has been programmed to not block any exits. This is because there is a possibility that the hazard spawns in front of the exits, which would leave the agents trapped and incapable of completing the simulation. For the case of deaths of agents, agents can only die if they are incapable of making any more movements. Thus, if agents are surrounded by walls or hazards, then the agent cannot move anymore and is considered as dead. The number of casualties is taken into account at the end of the simulation.
